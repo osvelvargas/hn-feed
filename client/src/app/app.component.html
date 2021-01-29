@@ -1,0 +1,18 @@
+<table width="100%">
+  <tr *ngFor="let hit of hits">
+    <td width="80%" (click)="openUrl(hit.url)">{{hit.title}} <span class="author"> - {{hit.author}} - </span></td>
+    <td width="15%" *ngIf="hit.day === 'today'">{{hit.created_at | date:' h:mm a' }}</td>
+    <td width="15%" *ngIf="hit.day === 'yesterday'">Yesterday {{hit.created_at | date:' h:mm a' }}</td>
+    <td width="15%" *ngIf="hit.day === 'other'">{{hit.created_at | date:' MMM d' }}</td>
+    <td width="5%" (click)="delHit(hit.id)">
+      <div class="icon-trash" style="float: right">
+        <div class="trash-lid" style="background-color: #807e7e"></div>
+        <div class="trash-container" style="background-color: #807e7e"></div>
+        <div class="trash-line-1"></div>
+        <div class="trash-line-2"></div>
+        <div class="trash-line-3"></div>
+      </div>
+    </td>
+  </tr>
+</table>
+
