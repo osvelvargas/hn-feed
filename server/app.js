@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const port = 8081;
+const port = 8085;
 const CronJob = require('cron').CronJob;
 const request = require('request');
 const MongoClient = require('mongodb').MongoClient;
@@ -12,7 +12,7 @@ app.use(cors());
 new CronJob('* * */1 * * *', function() {
     request.get('http://hn.algolia.com/api/v1/search_by_date?query=nodejs', { json: true }, (err, res, data) => {
         if (!err){
-            MongoClient.connect('mongodb://localhost:27017', {useUnifiedTopology: true})
+            MongoClient.connect('mongodb://localhost:27025', {useUnifiedTopology: true})
                 .then(client => {
                     const db = client.db('dbNews');
                     const collection = db.collection('hits');
@@ -40,7 +40,7 @@ new CronJob('* * */1 * * *', function() {
 }, function() {}, true);
 
 app.get('/getNews', (req, res) => {
-    MongoClient.connect('mongodb://localhost:27017', {useUnifiedTopology: true})
+    MongoClient.connect('mongodb://localhost:27025', {useUnifiedTopology: true})
         .then(client => {
             const db = client.db('dbNews');
             const collection = db.collection('hits');
@@ -55,7 +55,7 @@ app.get('/getNews', (req, res) => {
 });
 
 app.get('/noShowNews', (req, res) => {
-    MongoClient.connect('mongodb://localhost:27017', {useUnifiedTopology: true})
+    MongoClient.connect('mongodb://localhost:27025', {useUnifiedTopology: true})
         .then(client => {
             const db = client.db('dbNews');
             const collection = db.collection('hits');
