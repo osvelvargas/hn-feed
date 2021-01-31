@@ -61,5 +61,5 @@ $ docker pull osvelvargas/hn-feed:latest
 
 or to run
 
-$ docker run -dp 8085:8085 osvelvargas/hn-feed:latest
+$ docker run -d -p 80:80 osvelvargas/hn-feed:latest
 </pre>
