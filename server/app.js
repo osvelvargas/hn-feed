@@ -1,66 +1,61 @@
-const express = require('express');
-const app = express();
-const port = process.env.PORT || 8085;
-const CronJob = require('cron').CronJob;
-const request = require('request');
-const ObjectID = require('mongodb').ObjectID;
-const cors = require('cors');
-const {client} = require('./src/config/mongo/mongo-client');
+import {Component, OnInit} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import { DatePipe } from '@angular/common';
 
-app.use(cors());
+@Component({
+    selector: 'app-root',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.css'],
+    providers: [DatePipe]
+})
 
-new CronJob('* * */1 * * *', function () {
-    request.get('http://hn.algolia.com/api/v1/search_by_date?query=nodejs', {json: true}, (err, res, data) => {
-        if (!err) {
-            const db = client.db('dbNews');
-            const collection = db.collection('hits');
-            if (data.hits && data.hits.length > 0) {
-                data.hits.forEach(item => {
-                    collection.find({'created_at': item.created_at}).toArray(function (err, docs) {
-                        if (!err) {
-                            if (docs.length === 0) {
-                                collection.insertOne(item, function (err, result) {
-                                    if (!err) {
-                                        console.log(result.ops);
-                                        client.close();
-                                    }
-                                });
-                            }
-                        }
-                    });
-                });
+export class AppComponent {
+    title = 'front';
+    hits = [];
+    today = new Date();
+    yesterday = new Date(this.today.getFullYear(), this.today.getMonth(), this.today.getDate() - 1);
+    constructor(private httpClient: HttpClient) {
+    this.fillTable();
+}
+
+fillTable(): void {
+    this.httpClient.get('/getNews').subscribe((result: any[]) => {
+        result.forEach(item => {
+            if (item.title || item.story_title){
+                let day = 'other';
+                if (this.today.toISOString().slice(0, 10) === new Date(item.created_at).toISOString().slice(0, 10)){
+                    day = 'today';
+                }
+                if (this.yesterday.toISOString().slice(0, 10) === new Date(item.created_at).toISOString().slice(0, 10)){
+                    day = 'yesterday';
+                }
+
+                const hit = {
+                    id: item._id,
+                    title: item.story_title ? item.story_title : item.title,
+                    author: item.author,
+                    created_at: new Date(item.created_at),
+                    url: item.url,
+                    day: day
+                };
+                this.hits.push(hit);
             }
+        });
+    });
+}
+
+openUrl(url: any): void {
+    if (url) {
+        window.open(url, '_blank');
+    }
+}
+
+delHit(id: any): void {
+    this.httpClient.get('/noShowNews?id=' + id).subscribe((result: any[]) => {
+        if (result){
+            this.hits = [];
+            this.fillTable();
         }
     });
-}, function () {
-}, true);
-
-app.get('/getNews', (req, res) => {
-
-    const db = client.db('dbNews');
-    const collection = db.collection('hits');
-    collection.find({}).sort({created_at: -1}).toArray(function (err, docs) {
-        if (!err) {
-            res.send(docs);
-        }
-    });
-});
-
-app.get('/noShowNews', (req, res) => {
-
-    const db = client.db('dbNews');
-    const collection = db.collection('hits');
-    const id = new ObjectID(req.query.id);
-    collection.findOneAndUpdate({'_id': id}, {$set: {title: null, story_title: null}}, function (err, doc) {
-        if (!err) {
-            res.send(doc);
-        }
-    });
-});
-
-app.use('/', express.static('public'));
-
-app.listen(port, () => {
-    client.connect();
-    console.log(`Example app listening at http://localhost:${port}`)
-});
+}
+}

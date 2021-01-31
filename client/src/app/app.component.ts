@@ -19,7 +19,7 @@ export class AppComponent {
   }
 
   fillTable(): void {
-    this.httpClient.get('http://localhost:8081/getNews').subscribe((result: any[]) => {
+      this.httpClient.get('/getNews').subscribe((result: any[]) => {
       result.forEach(item => {
         if (item.title || item.story_title){
           let day = 'other';
@@ -51,7 +51,7 @@ export class AppComponent {
   }
 
   delHit(id: any): void {
-    this.httpClient.get('http://localhost:8081/noShowNews?id=' + id).subscribe((result: any[]) => {
+      this.httpClient.get('/noShowNews?id=' + id).subscribe((result: any[]) => {
       if (result){
         this.hits = [];
         this.fillTable();
