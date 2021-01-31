@@ -25,27 +25,76 @@ $ node app.js
 
 Dockerfile:
 <pre>
-FROM node:14
+FROM node:14.15.4
 
 WORKDIR /usr/src/app
 
-COPY ["package.json", "package-lock.json*", "./"]
+COPY . .
 
-RUN npm install
+ENV MONGO_URI=mongodb://mongo:27017
+ENV PORT=80
+
+EXPOSE 80
+
+CMD [ "npm", "start" ]
+</pre>
+### Create a docker image for the Node application
+
+`Dockerfile` into root directory.
+
+Dockerfile:
+<pre>
+FROM node:14.15.4
+
+WORKDIR /usr/src/app
 
 COPY . .
 
-EXPOSE 8081
+ENV MONGO_URI=mongodb://mongo:27017
+ENV PORT=80
 
-CMD ["node", "app.js"]
+EXPOSE 80
 
+CMD [ "npm", "start" ]
+</pre>
+
+`docker-compose` into root directory.
+
+docker-compose.yml:
+<pre>
+version: "3"
+services:
+  app:
+    container_name: app
+    restart: always
+    build: .
+    ports:
+      - "80:80"
+    depends_on:
+      - mongo
+    networks:
+      - app_network
+    environment:
+      - MONGO_URI=mongodb://mongo:27017
+      - PORT=80
+  mongo:
+    container_name: mongo
+    image: mongo
+    networks:
+      - app_network
+    ports:
+      - "27017"
+networks:
+  app_network:
 </pre>
 
 ### `.dockerignore` file
 .dockerignore:
 <pre>
-node_modules
+.idea/
 npm-debug.log
+.gitignore
+package-lock.json
 </pre>
 
 ### Building your docker image
@@ -54,12 +103,16 @@ npm-debug.log
 $ docker build -t osvelvargas/hn-feed .
 </pre>
 
+### run application
+
+<pre>
+$ docker-compose up
+</pre>
+
 ### Pull application from hub.docker.com
 
 <pre>
-$ docker pull osvelvargas/hn-feed:latest
+$ docker build -t osvelvargas/hn-feed .
 
-or to run
-
-$ docker run -d -p 80:80 osvelvargas/hn-feed:latest
+$ docker-compose up
 </pre>

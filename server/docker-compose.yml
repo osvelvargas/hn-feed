@@ -5,7 +5,7 @@ services:
     restart: always
     build: .
     ports:
-      - "80:80"
+      - "8025:80"
     depends_on:
       - mongo
     networks:
