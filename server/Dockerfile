@@ -8,7 +8,10 @@ RUN npm install
 
 COPY . .
 
-EXPOSE 8085 27025
+EXPOSE 8085
+
+ENV MONGO_URI=mongodb://mongo:27017
+ENV PORT=8085
 
 # start app
 CMD ["node", "app.js"]
